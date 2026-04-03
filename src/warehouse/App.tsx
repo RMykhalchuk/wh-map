@@ -4,10 +4,13 @@ import { useWarehouseStore } from './hooks/useWarehouseStore';
 import Breadcrumb from './components/Breadcrumb';
 import Sidebar from './components/sidebar/Sidebar';
 import MapGrid from './components/map/MapGrid';
+import Map3DView from './components/map/Map3DView';
 import RowMap from './components/detail/RowMap';
 import ukMessages from './i18n/uk';
 import enMessages from './i18n/en';
 import type { NavState, AppMode } from './types';
+
+type ViewMode = '2d' | '3d';
 
 type Locale = 'uk' | 'en';
 const LOCALE_KEY = 'warehouse_locale';
@@ -25,6 +28,7 @@ function WarehouseApp() {
   const [drawingWall, setDrawingWall] = useState(false);
   const [wallColor, setWallColor] = useState('#475569');
   const [showBlockDialog, setShowBlockDialog] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('2d');
 
   useEffect(() => { load(); }, [load]);
 
@@ -244,37 +248,75 @@ function WarehouseApp() {
                 />
               )}
 
-              <div className="flex flex-col flex-1 overflow-hidden border border-slate-200 rounded-md m-4">
-                <MapGrid
-                  navKey={[nav.level, nav.locationId, nav.zoneId, nav.sectorId].filter(Boolean).join(':')}
-                  items={gridItems}
-                  customItems={currentCustomElements}
-                  wallItems={currentWallElements}
-                  readonly={isView}
-                  drawingWall={drawingWall}
-                  wallColor={wallColor}
-                  showBlockDialog={showBlockDialog}
-                  onBlockDialogClose={() => setShowBlockDialog(false)}
-                  onDrop={(elementId, gridX, gridY) => {
-                    const allItems = [...locations, ...zones, ...sectors, ...rows];
-                    const item = allItems.find(i => String(i.id) === String(elementId));
-                    if (item) { setHasChanges(true); placeItem(item, gridX, gridY); }
-                  }}
-                  onUpdate={(id, updates) => { setHasChanges(true); updateMapElement(id, updates); }}
-                  onDelete={(id) => { setHasChanges(true); deleteMapElement(id); }}
-                  onNavigate={(elementId) => {
-                    if (!isView && nav.level === 'rows') return;
-                    navigate(elementId);
-                  }}
-                  onCustomAdd={(opts) => { setHasChanges(true); addCustomElement(opts, nav); }}
-                  onCustomUpdate={(id, updates) => { setHasChanges(true); updateCustomElement(id, updates); }}
-                  onCustomDelete={(id) => { setHasChanges(true); deleteCustomElement(id); }}
-                  onWallAdd={(opts) => { setHasChanges(true); addWallElement(opts, nav); }}
-                  onWallUpdate={(id, updates) => { setHasChanges(true); updateWallElement(id, updates); }}
-                  onWallDelete={(id) => { setHasChanges(true); deleteWallElement(id); }}
-                  onWallCommit={() => setDrawingWall(false)}
-                  onWallCancel={() => setDrawingWall(false)}
-                />
+              <div className="flex flex-col flex-1 overflow-hidden border border-slate-200 rounded-md m-4 relative">
+                {isView && (
+                  <div className="absolute top-3 right-3 z-30 flex items-center gap-0 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+                    <button
+                      className={`px-3 py-1.5 text-[12px] font-semibold transition-all flex items-center gap-1.5 ${viewMode === '2d' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+                      onClick={() => setViewMode('2d')}
+                      title="2D вигляд"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                      </svg>
+                      2D
+                    </button>
+                    <button
+                      className={`px-3 py-1.5 text-[12px] font-semibold transition-all flex items-center gap-1.5 ${viewMode === '3d' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+                      onClick={() => setViewMode('3d')}
+                      title="3D вигляд"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+                      </svg>
+                      3D
+                    </button>
+                  </div>
+                )}
+
+                {(!isView || viewMode === '2d') && (
+                  <MapGrid
+                    navKey={[nav.level, nav.locationId, nav.zoneId, nav.sectorId].filter(Boolean).join(':')}
+                    items={gridItems}
+                    customItems={currentCustomElements}
+                    wallItems={currentWallElements}
+                    readonly={isView}
+                    drawingWall={drawingWall}
+                    wallColor={wallColor}
+                    showBlockDialog={showBlockDialog}
+                    onBlockDialogClose={() => setShowBlockDialog(false)}
+                    onDrop={(elementId, gridX, gridY) => {
+                      const allItems = [...locations, ...zones, ...sectors, ...rows];
+                      const item = allItems.find(i => String(i.id) === String(elementId));
+                      if (item) { setHasChanges(true); placeItem(item, gridX, gridY); }
+                    }}
+                    onUpdate={(id, updates) => { setHasChanges(true); updateMapElement(id, updates); }}
+                    onDelete={(id) => { setHasChanges(true); deleteMapElement(id); }}
+                    onNavigate={(elementId) => {
+                      if (!isView && nav.level === 'rows') return;
+                      navigate(elementId);
+                    }}
+                    onCustomAdd={(opts) => { setHasChanges(true); addCustomElement(opts, nav); }}
+                    onCustomUpdate={(id, updates) => { setHasChanges(true); updateCustomElement(id, updates); }}
+                    onCustomDelete={(id) => { setHasChanges(true); deleteCustomElement(id); }}
+                    onWallAdd={(opts) => { setHasChanges(true); addWallElement(opts, nav); }}
+                    onWallUpdate={(id, updates) => { setHasChanges(true); updateWallElement(id, updates); }}
+                    onWallDelete={(id) => { setHasChanges(true); deleteWallElement(id); }}
+                    onWallCommit={() => setDrawingWall(false)}
+                    onWallCancel={() => setDrawingWall(false)}
+                  />
+                )}
+
+                {isView && viewMode === '3d' && (
+                  <Map3DView
+                    items={gridItems}
+                    customItems={currentCustomElements}
+                    wallItems={currentWallElements}
+                    gridCols={16}
+                    gridRows={12}
+                    onNavigate={(elementId) => navigate(elementId)}
+                  />
+                )}
               </div>
             </>
           )}
