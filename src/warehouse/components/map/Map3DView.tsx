@@ -269,9 +269,8 @@ function drawShelfUnit(
 
       const pts = [p00, p10, p11, p01].map(p => ({ x: p.sx + ox, y: p.sy + oy }));
 
-      const FRAME_W = cellSize * 0.06;
-      const SHELF_H_TOTAL = cellSize * 1.4 * z;
-      const BOX_GAP = cellSize * 0.04;
+      const SHELF_H_TOTAL = cellSize * 1.6;
+      const FRAME_W = cellSize * 0.07;
       const BOX_H = (SHELF_H_TOTAL - FRAME_W * (SHELF_FLOORS + 1)) / SHELF_FLOORS;
       const frameH = FRAME_W;
 
@@ -327,37 +326,19 @@ function drawShelfUnit(
       for (let floor = 0; floor < SHELF_FLOORS; floor++) {
         const baseZ = frameH + floor * (BOX_H + frameH);
 
-        const shelfBotZ = baseZ - frameH * 0.5;
         const shelfTopZ = baseZ;
-
-        const sl0 = isoPoint(0, 0, shelfBotZ);
-        const sl1 = isoPoint(1, 0, shelfBotZ);
-        const sl2 = isoPoint(1, 1, shelfBotZ);
-        const sl3 = isoPoint(0, 1, shelfBotZ);
         const st0 = isoPoint(0, 0, shelfTopZ);
         const st1 = isoPoint(1, 0, shelfTopZ);
         const st2 = isoPoint(1, 1, shelfTopZ);
         const st3 = isoPoint(0, 1, shelfTopZ);
 
         ctx.beginPath();
-        ctx.moveTo(sl3.x, sl3.y); ctx.lineTo(st3.x, st3.y); ctx.lineTo(st0.x, st0.y); ctx.lineTo(sl0.x, sl0.y);
-        ctx.closePath();
-        ctx.fillStyle = darken(frameColorLight, 0.8);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.moveTo(sl1.x, sl1.y); ctx.lineTo(st1.x, st1.y); ctx.lineTo(st2.x, st2.y); ctx.lineTo(sl2.x, sl2.y);
-        ctx.closePath();
-        ctx.fillStyle = frameColor;
-        ctx.fill();
-
-        ctx.beginPath();
         ctx.moveTo(st0.x, st0.y); ctx.lineTo(st1.x, st1.y); ctx.lineTo(st2.x, st2.y); ctx.lineTo(st3.x, st3.y);
         ctx.closePath();
-        ctx.fillStyle = '#666';
+        ctx.fillStyle = '#4a4a4a';
         ctx.fill();
 
-        const boxGap = 0.06;
+        const boxGap = 0.05;
         const boxTopZ = baseZ + BOX_H;
 
         const bx0 = boxGap, bx1 = 1 - boxGap;
@@ -377,22 +358,22 @@ function drawShelfUnit(
         ctx.closePath();
         ctx.fillStyle = boxLeft;
         ctx.fill();
-        ctx.strokeStyle = boxShadow; ctx.lineWidth = 0.4; ctx.stroke();
+        ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 0.5; ctx.stroke();
 
         ctx.beginPath();
         ctx.moveTo(bb1.x, bb1.y); ctx.lineTo(bt1.x, bt1.y); ctx.lineTo(bt2.x, bt2.y); ctx.lineTo(bb2.x, bb2.y);
         ctx.closePath();
         ctx.fillStyle = boxRight;
         ctx.fill();
-        ctx.strokeStyle = boxShadow; ctx.lineWidth = 0.4; ctx.stroke();
+        ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 0.5; ctx.stroke();
 
         ctx.beginPath();
         ctx.moveTo(bt0.x, bt0.y); ctx.lineTo(bt1.x, bt1.y); ctx.lineTo(bt2.x, bt2.y); ctx.lineTo(bt3.x, bt3.y);
         ctx.closePath();
         ctx.fillStyle = boxTop;
         ctx.fill();
-        ctx.strokeStyle = hovered ? 'rgba(255,255,255,0.4)' : boxShadow;
-        ctx.lineWidth = hovered ? 0.8 : 0.4;
+        ctx.strokeStyle = hovered ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.1)';
+        ctx.lineWidth = hovered ? 1 : 0.5;
         ctx.stroke();
       }
 
