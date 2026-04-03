@@ -309,12 +309,47 @@ function WarehouseApp() {
 
                 {isView && viewMode === '3d' && (
                   <Map3DView
-                    items={gridItems}
-                    customItems={currentCustomElements}
-                    wallItems={currentWallElements}
-                    gridCols={16}
-                    gridRows={12}
-                    onNavigate={(elementId) => navigate(elementId)}
+                    data={{
+                      mapElements,
+                      customElements: customElements || [],
+                      wallElements: (wallElements || []).filter(w => w.nav_scope === 'locations' && w.nav_parent_id === null),
+                      locations,
+                      zones,
+                      sectors,
+                      rows,
+                      shelves,
+                    }}
+                    onNavigate={(elementId, depth) => {
+                      if (depth === 0) navigate(elementId);
+                      else if (depth === 1) {
+                        const zone = zones.find(z => z.id === elementId);
+                        if (zone) {
+                          const loc = locations.find(l => l.id === zone.location_id);
+                          navigate(zone.location_id);
+                          setTimeout(() => navigate(elementId), 0);
+                        }
+                      } else if (depth === 2) {
+                        const sec = sectors.find(s => s.id === elementId);
+                        if (sec) {
+                          const zone = zones.find(z => z.id === sec.zone_id);
+                          if (zone) navigate(zone.location_id);
+                          setTimeout(() => { navigate(sec.zone_id); setTimeout(() => navigate(elementId), 0); }, 0);
+                        }
+                      } else if (depth === 3) {
+                        const row = rows.find(r => r.id === elementId);
+                        if (row) {
+                          const sec = sectors.find(s => s.id === row.sector_id);
+                          if (sec) {
+                            const zone = zones.find(z => z.id === sec.zone_id);
+                            if (zone) navigate(zone.location_id);
+                            setTimeout(() => {
+                              navigate(sec.zone_id);
+                              setTimeout(() => { navigate(row.sector_id); setTimeout(() => navigate(elementId), 0); }, 0);
+                            }, 0);
+                          }
+                        }
+                      }
+                    }}
                   />
                 )}
               </div>
