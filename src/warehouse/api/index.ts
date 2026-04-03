@@ -1,15 +1,19 @@
-import type { MapElement, WarehouseState } from '../types';
+import type { MapElement, CustomElement, WallElement, WarehouseState } from '../types';
 import { LOCATIONS, ZONES, SECTORS, ROWS, SHELVES, CELLS } from '../data/fixtures';
+import { INITIAL_MAP_ELEMENTS, INITIAL_CUSTOM_ELEMENTS, INITIAL_WALL_ELEMENTS } from '../data/fixtures';
 
-let mapElements: MapElement[] = [];
+let mapElements: MapElement[] = INITIAL_MAP_ELEMENTS.map(el => ({ ...el }));
 let nextId = 1;
 
 function genId(): string {
   return `me-${nextId++}`;
 }
 
+let customElements: CustomElement[] = INITIAL_CUSTOM_ELEMENTS.map(el => ({ ...el }));
+let wallElements: WallElement[] = INITIAL_WALL_ELEMENTS.map(el => ({ ...el, points: el.points.map(p => ({ ...p })) }));
+
 export function createApi() {
-  async function fetchAll(): Promise<Omit<WarehouseState, 'loading' | 'mode' | 'nav' | 'customElements' | 'wallElements'>> {
+  async function fetchAll(): Promise<Omit<WarehouseState, 'loading' | 'mode' | 'nav'>> {
     return {
       locations: LOCATIONS,
       zones: ZONES,
@@ -18,6 +22,8 @@ export function createApi() {
       shelves: SHELVES,
       cells: CELLS,
       mapElements: [...mapElements],
+      customElements: [...customElements],
+      wallElements: [...wallElements],
     };
   }
 

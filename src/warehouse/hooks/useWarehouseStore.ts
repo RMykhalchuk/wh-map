@@ -33,7 +33,13 @@ export function useWarehouseStore() {
   const load = useCallback(async () => {
     const data = await api.fetchAll();
     setState(prev => {
-      const next = { ...prev, ...data, loading: false };
+      const next = {
+        ...prev,
+        ...data,
+        customElements: data.customElements ?? prev.customElements,
+        wallElements: data.wallElements ?? prev.wallElements,
+        loading: false,
+      };
 
       function autoSkipInitial(navState: NavState, state: typeof next): NavState {
         if (state.mode !== 'view') return navState;
